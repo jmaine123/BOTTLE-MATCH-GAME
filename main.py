@@ -49,8 +49,8 @@ inner_bottles = []
 shuffled_inner_bottles = []
 bottle_paths = ['assets/joan-tran-reEySFadyJQ-unsplash.jpg', 'assets/butterfly.webp', 'assets/coffee.jpg', 'assets/karl-kohler-dGIEMeN2MV8-unsplash.jpg', './assets/orange-juice.jpg', './assets/Coca-cola.jpg']
 count_sounds = []
-title_num = 0
 difficulty =''
+pause = False
 
 # cup_image = pygame.image.load('assets/martin-widenka-0rI80lQco18-unsplash.jpg').convert_alpha()
 # cup_scaled = pygame.transform.scale(cup_image, IMAGE_SIZE)
@@ -122,21 +122,6 @@ def config_game():
     shuffle_bottles()
     
 
-def draw_menu_title():
-    global title_num
-    if title_num <= 2:
-        top_title_phases = ["BOTTLE MATCH THAT", "BOTTLE THAT MATCH", "MATCH THAT BOTTLE"]
-        title = top_title_phases[title_num]
-        title_surf = title_font.render(title, True, YELLOW)
-        title_rect = title_surf.get_rect()
-        print(title_rect)
-        # pygame.time.delay(2000)     
-        title_cover = pygame.rect.Rect(SCREEN_WIDTH //2 - title_surf.get_width()//2,50,title_rect[2], title_rect[3])
-        if title_num != 2:
-            pygame.draw.rect(screen, RED, title_cover)
-            pygame.display.update()
-        screen.blit(title_surf, (SCREEN_WIDTH //2 - title_surf.get_width()//2, 50))            
-        pygame.display.update()
 
 
 def set_difficulty():
@@ -166,13 +151,11 @@ def main_menu():
                 sys.exit()
                 
         
-        #draw main title letter by letter animaton
-        # draw_menu_title()
-        global title_num
-        title_num+=1
-        
         title_surface = title_font.render("MATCH THAT BOTTLE", True, YELLOW)
         screen.blit(title_surface, (SCREEN_WIDTH //2 - title_surface.get_width()//2, 100))
+        
+        
+        #MAIN MENU BUTTON LOGIC
         
         menu_x = 360
         menu_y = SCREEN_HEIGHT//2
@@ -402,7 +385,7 @@ def play_game():
             frame.draw()
         
         
-        #quit game by click exit on window
+        #Handle button being pressed
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and matching != str(number_of_bottles):
@@ -419,12 +402,20 @@ def play_game():
                     # old_frame_num = selected_bottle_frame(selected)
                     place_bottle(bottles_rects[selected], original_loc)
                     
-                for frame in bottle_frames:
-                    # print(frame.bottle_number)
-
+                # for frame in bottle_frames:
+                #     print(frame.bottle_number)
                     selected = None
                     update_match_count()
                     center = ''
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if pause:
+                        pause = False
+                    else:
+                        pause = True
+                    
+            # quit game by click exit on window
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
