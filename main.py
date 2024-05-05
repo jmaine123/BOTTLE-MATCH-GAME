@@ -8,7 +8,7 @@ import numpy as np
 FPS = 60
 pygame.init()
 pygame.mixer.init
-SCREEN_WIDTH = 800
+SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 600
 PURPLE = (51, 0, 204)
 LAVENDER = (105, 0, 196)
@@ -39,7 +39,7 @@ menu_font = pygame.font.SysFont("Comic Sans", 26)
 title_font = pygame.font.SysFont("Comic Sans", 42)
 menu_sound = pygame.mixer.Sound("assets/mixkit-light-spell-873.wav")
 selected = None
-number_of_bottles = 4
+number_of_bottles = 6
 matching = ''
 matching_msg = ''
 bottles_rects = []
@@ -47,9 +47,10 @@ bottle_images = []
 bottle_frames = []
 inner_bottles = []
 shuffled_inner_bottles = []
-bottle_paths = ['assets/joan-tran-reEySFadyJQ-unsplash.jpg', 'assets/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvam9iNjgwLTE2Ni1wLWwxZGJ1cTN2LnBuZw.webp', 'assets/martin-widenka-0rI80lQco18-unsplash.jpg', 'assets/karl-kohler-dGIEMeN2MV8-unsplash.jpg']
+bottle_paths = ['assets/joan-tran-reEySFadyJQ-unsplash.jpg', 'assets/butterfly.webp', 'assets/coffee.jpg', 'assets/karl-kohler-dGIEMeN2MV8-unsplash.jpg', './assets/orange-juice.jpg', './assets/Coca-cola.jpg']
 count_sounds = []
 title_num = 0
+difficulty =''
 
 # cup_image = pygame.image.load('assets/martin-widenka-0rI80lQco18-unsplash.jpg').convert_alpha()
 # cup_scaled = pygame.transform.scale(cup_image, IMAGE_SIZE)
@@ -136,12 +137,24 @@ def draw_menu_title():
             pygame.display.update()
         screen.blit(title_surf, (SCREEN_WIDTH //2 - title_surf.get_width()//2, 50))            
         pygame.display.update()
+
+
+def set_difficulty():
+    global number_of_bottles
+    if difficulty == "Easy":
+        number_of_bottles = 4
+    if difficulty == "Normal":
+        number_of_bottles = 5
+    if difficulty == "Hard":
+        number_of_bottles = 6
             
             
 def main_menu():
+    global difficulty
     
     running = True
     while running:
+        global number_of_bottles
         pos = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
         screen.fill(LAVENDER)
@@ -154,28 +167,55 @@ def main_menu():
                 
         
         #draw main title letter by letter animaton
-        draw_menu_title()
+        # draw_menu_title()
         global title_num
         title_num+=1
         
         title_surface = title_font.render("MATCH THAT BOTTLE", True, YELLOW)
         screen.blit(title_surface, (SCREEN_WIDTH //2 - title_surface.get_width()//2, 100))
         
-        menu_x = 150
+        menu_x = 360
         menu_y = SCREEN_HEIGHT//2
-        new_game = Button("New Game", GREEN, (menu_x, menu_y), 175, 50)
-        new_game.draw()
         
-        exit_btn = Button("Quit", RED, (menu_x + 370, menu_y), 175, 50)
+        easy_btn = Button("EASY", GREEN, (menu_x, menu_y), 175, 50)
+        easy_btn.draw()
+        
+        normal_btn = Button("NORMAL", GREEN, (menu_x, menu_y + 70), 175, 50)
+        normal_btn.draw()
+        
+        hard_btn = Button("HARD", GREEN, (menu_x, menu_y + 140), 175, 50)
+        hard_btn.draw()
+        
+        # new_game = Button("NEW GAME", GREEN, (menu_x, menu_y), 175, 50)
+        # new_game.draw()
+        
+        
+        exit_btn = Button("QUIT", RED, (menu_x, menu_y + 210), 175, 50)
         exit_btn.draw()
 
         pygame.display.update()
         
-        if new_game.checkClicked():
+        # if new_game.checkClicked():
+        #     config_game()
+        #     # number_of_bottles = 4
+        #     play_game()
+        
+        if easy_btn.checkClicked():
+            difficulty = "Easy"
+            set_difficulty()
+            config_game()
+            play_game()
+        if normal_btn.checkClicked():
+            difficulty = "Normal"
+            set_difficulty()
+            config_game()
+            play_game()
+        if hard_btn.checkClicked():
+            difficulty = "Hard"
+            set_difficulty()
             config_game()
             play_game()
             
-  
             
         if exit_btn.checkClicked():
             running = False
@@ -190,7 +230,7 @@ def shuffle_bottles():
     global shuffled_inner_bottles
     all_nums = [num for num in range(0, number_of_bottles)]
     rand_nums = random.sample(all_nums, len(all_nums))
-    print(rand_nums)
+    # print(rand_nums)
     
     for num in rand_nums:
         shuffled_inner_bottles.append(inner_bottles[num])
@@ -203,7 +243,7 @@ def shuffle_bottles():
   
 
 def append_bottles():
-    frame_x = 400
+    frame_x = 200
     frame_y = 300
     
     bottle_x = 50
@@ -328,8 +368,8 @@ def update_match_count():
     #array of the bottom bottles numbers
     top_nums = [frame.bottle_number for frame in bottle_frames]
     
-    print(top_nums)
-    print(bottom_nums)
+    # print(top_nums)
+    # print(bottom_nums)
     
 
     if frames_all_full(top_nums):
@@ -398,7 +438,7 @@ def play_game():
         #Display match count to player
         matching_text = font.render(matching_msg, True, WHITE)
         matching_rect = matching_text.get_rect()
-        matching_rect.center = (600, 100)
+        matching_rect.center = (600, 50)
         screen.blit(matching_text, matching_rect)
         
         #Display bottom Bottles
@@ -415,7 +455,7 @@ def play_game():
                 screen.blit(question_scaled, (bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP))
             else:
                 screen.blit(inner[0], (bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP))
-                restart = Button("RESTART", GREEN, (100, 400), 175, 50)
+                restart = Button("RESTART", GREEN, (50, 400), 175, 50)
                 restart.draw()
                 if restart.checkClicked():
                     config_game()
