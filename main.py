@@ -12,6 +12,8 @@ SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 600
 PURPLE = (51, 0, 204)
 LAVENDER = (105, 0, 196)
+TRANSPARENT_PURPLE = (86, 76, 125, 90)
+DARK_PURPLE = (86, 76, 125)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -27,11 +29,14 @@ BOTTLE_HEIGHT = 90
 IMAGE_SIZE = (BOTTLE_WIDTH, BOTTLE_HEIGHT)
 SHELF_GAP = 10
 BOTTLE_GAP = 15
+BUTTON_WIDTH = 175
+BUTTON_HEIGHT = 50
 
 
 
 #game variables
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
 pygame.display.set_caption("Bottle Match Game")
 game_music = pygame.mixer.Sound("./assets/Sky Track.mp3")
 font = pygame.font.SysFont("Comic Sans", 26)
@@ -51,9 +56,8 @@ bottle_paths = ['assets/joan-tran-reEySFadyJQ-unsplash.jpg', 'assets/butterfly.w
 count_sounds = []
 difficulty =''
 pause = False
+main_menu = True
 
-# cup_image = pygame.image.load('assets/martin-widenka-0rI80lQco18-unsplash.jpg').convert_alpha()
-# cup_scaled = pygame.transform.scale(cup_image, IMAGE_SIZE)
 
 
 
@@ -73,12 +77,12 @@ class BottleBox():
 
 
 class Button:
-    def __init__(self, txt, color, pos, width, height):
+    def __init__(self, surf, font, txt, color, pos, width, height):
+        self.surf = surf
+        self.font = font
         self.text = txt
-        self.text_surf = menu_font.render(self.text, True, PURPLE)
+        self.text_surf = self.font.render(self.text, True, PURPLE)
         self.color = color
-        self.display_color = self.color
-        self.hover_color = WHITE
         self.pos = pos
         self.height = height
         self.width = width
@@ -89,23 +93,25 @@ class Button:
         
     def draw(self):
         # border_rect = pygame.rect.Rect(self.pos[0] - 2, self.pos[1] - 2, self.width + 4, self.height + 4)
-        pygame.draw.rect(screen, PURPLE, self.border_rect, border_radius=15)
-        pygame.draw.rect(screen, self.display_color, self.button, border_radius=15)
-        screen.blit(self.text_surf, self.text_rect)
+        pygame.draw.rect(self.surf, PURPLE, self.border_rect, border_radius=15)
+        pygame.draw.rect(self.surf, self.color, self.button, border_radius=15)
+        self.surf.blit(self.text_surf, self.text_rect)
     
     def checkClicked(self):
         mouse_pos = pygame.mouse.get_pos()
         mouse_click = pygame.mouse.get_pressed()
         if self.button.collidepoint(mouse_pos):
-            self.display_color = self.hover_color
             if mouse_click[0] == 1 and self.clicked == False:
                 # print("click")
                 menu_sound.play()
                 self.clicked = True
                 return True
         if mouse_click[0] == 0:
-            self.display_color = self.color
             self.clicked = False
+
+    
+            
+    
             
             
 
@@ -133,10 +139,13 @@ def set_difficulty():
     if difficulty == "Hard":
         number_of_bottles = 6
             
+ 
+ 
             
 def main_menu():
     global difficulty
-    
+    global pause
+    pause = False 
     running = True
     while running:
         global number_of_bottles
@@ -150,60 +159,60 @@ def main_menu():
                 pygame.quit()
                 sys.exit()
                 
-        
-        title_surface = title_font.render("MATCH THAT BOTTLE", True, YELLOW)
-        screen.blit(title_surface, (SCREEN_WIDTH //2 - title_surface.get_width()//2, 100))
-        
-        
-        #MAIN MENU BUTTON LOGIC
-        
-        menu_x = 360
-        menu_y = SCREEN_HEIGHT//2
-        
-        easy_btn = Button("EASY", GREEN, (menu_x, menu_y), 175, 50)
-        easy_btn.draw()
-        
-        normal_btn = Button("NORMAL", GREEN, (menu_x, menu_y + 70), 175, 50)
-        normal_btn.draw()
-        
-        hard_btn = Button("HARD", GREEN, (menu_x, menu_y + 140), 175, 50)
-        hard_btn.draw()
-        
-        # new_game = Button("NEW GAME", GREEN, (menu_x, menu_y), 175, 50)
-        # new_game.draw()
-        
-        
-        exit_btn = Button("QUIT", RED, (menu_x, menu_y + 210), 175, 50)
-        exit_btn.draw()
+        if main_menu:
+            title_surface = title_font.render("MATCH THAT BOTTLE", True, YELLOW)
+            screen.blit(title_surface, (SCREEN_WIDTH //2 - title_surface.get_width()//2, 100))
+            
+            
+            #MAIN MENU BUTTON LOGIC
+            
+            menu_x = 360
+            menu_y = SCREEN_HEIGHT//2
+            
+            easy_btn = Button(screen, menu_font, "EASY", GREEN, (menu_x, menu_y), 175, 50)
+            easy_btn.draw()
+            
+            normal_btn = Button(screen, menu_font, "NORMAL", GREEN, (menu_x, menu_y + 70), 175, 50)
+            normal_btn.draw()
+            
+            hard_btn = Button(screen, menu_font, "HARD", GREEN, (menu_x, menu_y + 140), 175, 50)
+            hard_btn.draw()
+            
+            # new_game = Button("NEW GAME", GREEN, (menu_x, menu_y), 175, 50)
+            # new_game.draw()
+            
+            
+            exit_btn = Button(screen, menu_font, "QUIT", RED, (menu_x, menu_y + 210), 175, 50)
+            exit_btn.draw()
 
-        pygame.display.update()
-        
-        # if new_game.checkClicked():
-        #     config_game()
-        #     # number_of_bottles = 4
-        #     play_game()
-        
-        if easy_btn.checkClicked():
-            difficulty = "Easy"
-            set_difficulty()
-            config_game()
-            play_game()
-        if normal_btn.checkClicked():
-            difficulty = "Normal"
-            set_difficulty()
-            config_game()
-            play_game()
-        if hard_btn.checkClicked():
-            difficulty = "Hard"
-            set_difficulty()
-            config_game()
-            play_game()
+            pygame.display.update()
             
+            # if new_game.checkClicked():
+            #     config_game()
+            #     # number_of_bottles = 4
+            #     play_game()
             
-        if exit_btn.checkClicked():
-            running = False
-            pygame.quit()
-            sys.exit()
+            if easy_btn.checkClicked():
+                difficulty = "Easy"
+                set_difficulty()
+                config_game()
+                play_game()
+            if normal_btn.checkClicked():
+                difficulty = "Normal"
+                set_difficulty()
+                config_game()
+                play_game()
+            if hard_btn.checkClicked():
+                difficulty = "Hard"
+                set_difficulty()
+                config_game()
+                play_game()
+                
+                
+            if exit_btn.checkClicked():
+                running = False
+                pygame.quit()
+                sys.exit()
 
 
 
@@ -362,19 +371,45 @@ def update_match_count():
                 count+= 1
         matching = str(count)
     matching_msg = f' Matching: {matching}'
+    
+
+def draw_pause():
+    pause_width = 300
+    pause_height = 500
+    center_x = SCREEN_WIDTH//2 - pause_width//2
+    center_y = SCREEN_HEIGHT//2 - pause_height//2
+    pygame.draw.rect(surface,TRANSPARENT_PURPLE, [0,0, SCREEN_WIDTH, SCREEN_HEIGHT])
+    pygame.draw.rect(surface, DARK_PURPLE, [center_x, center_y, pause_width, pause_height], 0, 10)
+    
+    # menu_btn = Button(surface, menu_font, "MAIN MENU", WHITE, (center_x + 50, center_y + 50), BUTTON_WIDTH, BUTTON_HEIGHT)
+    resume = Button(surface, menu_font, "RESUME", WHITE, (center_x + 70, center_y + 130), BUTTON_WIDTH, BUTTON_HEIGHT)
+    restart = Button(surface, menu_font, "RESTART", WHITE, (center_x + 70, center_y + 210), BUTTON_WIDTH, BUTTON_HEIGHT)
+    leave = Button(surface, menu_font, "QUIT", RED, (center_x + 70, center_y + 290), BUTTON_WIDTH, BUTTON_HEIGHT)
+    
+    # menu_btn.draw()
+    resume.draw()
+    restart.draw()
+    leave.draw()
+    screen.blit(surface, (0,0))
+    
+    return restart, resume, leave
         
 
 
 
-    
 
 
 
 def play_game():
-    global guessed_letters
+    global main_menu
+    global pause
+    global selected
+    
+    pause = False
+    main_menu = False
+    pause = False
     clock = pygame.time.Clock()
     running = True
-    global selected
     
     while running:   
         clock.tick(FPS)
@@ -387,26 +422,11 @@ def play_game():
         
         #Handle button being pressed
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and matching != str(number_of_bottles):
-                    for num, bottle in enumerate(bottles_rects):   
-                        if bottle[0].collidepoint(event.pos):
-                            original_loc = bottle[0].center
-                            selected = num
-
-            if event.type == pygame.MOUSEMOTION:
-                if selected != None:
-                    bottles_rects[selected][0].move_ip(event.rel)
-            if event.type == pygame.MOUSEBUTTONUP:
-                if selected != None:
-                    # old_frame_num = selected_bottle_frame(selected)
-                    place_bottle(bottles_rects[selected], original_loc)
-                    
-                # for frame in bottle_frames:
-                #     print(frame.bottle_number)
-                    selected = None
-                    update_match_count()
-                    center = ''
+            # quit game by click exit on window
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
             
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
@@ -414,12 +434,34 @@ def play_game():
                         pause = False
                     else:
                         pause = True
-                    
-            # quit game by click exit on window
-            if event.type == pygame.QUIT:
-                running = False
-                pygame.quit()
-                sys.exit()
+                print(pause)
+            if not pause:
+                if event.type == pygame.MOUSEBUTTONDOWN and not pause:
+                    if event.button == 1 and matching != str(number_of_bottles):
+                        for num, bottle in enumerate(bottles_rects):   
+                            if bottle[0].collidepoint(event.pos):
+                                original_loc = bottle[0].center
+                                selected = num
+                if event.type == pygame.MOUSEBUTTONDOWN and pause:
+                    print('unpause')
+                    if resume.checkClicked():
+                        pause = False
+                        
+
+                if event.type == pygame.MOUSEMOTION:
+                    if selected != None:
+                        bottles_rects[selected][0].move_ip(event.rel)
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if selected != None:
+                        # old_frame_num = selected_bottle_frame(selected)
+                        place_bottle(bottles_rects[selected], original_loc)
+                        
+                    # for frame in bottle_frames:
+                    #     print(frame.bottle_number)
+                        selected = None
+                        update_match_count()
+                        center = ''
+            
                 
     
         for i, image in enumerate(bottle_images):
@@ -446,11 +488,29 @@ def play_game():
                 screen.blit(question_scaled, (bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP))
             else:
                 screen.blit(inner[0], (bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP))
-                restart = Button("RESTART", GREEN, (50, 400), 175, 50)
+                restart = Button(screen, menu_font, "RESTART", GREEN, (10, 400), 175, 50)
                 restart.draw()
-                if restart.checkClicked():
+                if restart.checkClicked() and pause == False:
                     config_game()
                     play_game()
+
+            if pause:
+                res, resume, leave = draw_pause()
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN and pause:
+                        print('unpause')
+                        if resume.checkClicked():
+                            pause = False
+                        if res.checkClicked():
+                            config_game()
+                            play_game()
+                        if leave.checkClicked():
+                            running = False
+                            pygame.quit()
+                            sys.exit()
+                            
+
+                            
                 
         
         
