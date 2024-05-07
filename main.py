@@ -29,7 +29,7 @@ BOTTLE_HEIGHT = 90
 IMAGE_SIZE = (BOTTLE_WIDTH, BOTTLE_HEIGHT)
 SHELF_GAP = 10
 BOTTLE_GAP = 15
-BUTTON_WIDTH = 175
+BUTTON_WIDTH = 180
 BUTTON_HEIGHT = 50
 
 
@@ -42,7 +42,10 @@ game_music = pygame.mixer.Sound("./assets/Sky Track.mp3")
 font = pygame.font.SysFont("Comic Sans", 26)
 menu_font = pygame.font.SysFont("Comic Sans", 26)
 title_font = pygame.font.SysFont("Comic Sans", 42)
-menu_sound = pygame.mixer.Sound("assets/mixkit-light-spell-873.wav")
+menu_sound = pygame.mixer.Sound("./assets/button-chime.wav")
+bottle_sound = pygame.mixer.Sound("./assets/Bottle-placement.wav")
+bottle_switch_sound = pygame.mixer.Sound("./assets/switch-bottle.wav")
+winning_sound = pygame.mixer.Sound("./assets/Win-the-game.mp3")
 selected = None
 number_of_bottles = 6
 matching = ''
@@ -52,7 +55,7 @@ bottle_images = []
 bottle_frames = []
 inner_bottles = []
 shuffled_inner_bottles = []
-bottle_paths = ['assets/joan-tran-reEySFadyJQ-unsplash.jpg', 'assets/butterfly.webp', 'assets/coffee.jpg', 'assets/karl-kohler-dGIEMeN2MV8-unsplash.jpg', './assets/orange-juice.jpg', './assets/Coca-cola.jpg']
+bottle_paths = ['./assets/joan-tran-reEySFadyJQ-unsplash.jpg', './assets/butterfly.webp', './assets/coffee.jpg', './assets/karl-kohler-dGIEMeN2MV8-unsplash.jpg', './assets/orange-juice.jpg', './assets/Coca-cola.jpg']
 count_sounds = []
 difficulty =''
 pause = False
@@ -289,6 +292,7 @@ def drop_bottle(bottle, prev_center):
             bottle_frame.bottle_number = bottle[1]
             bottle_frame.occupied = True
             bottle[2] = True
+            bottle_sound.play()
         elif bottle_frame.bottle_number == None and pygame.Rect.colliderect(bottle[0], bottle_frame.box) and old_bottle_num != None:
             print("place new location")
             bottle[0].center = bottle_frame.box.center
@@ -296,7 +300,8 @@ def drop_bottle(bottle, prev_center):
             bottle_frame.bottle_number = bottle[1]
             old_frame.bottle_number = None
             bottle_frame.occupied = True
-            bottle[2] = True     
+            bottle[2] = True 
+            bottle_switch_sound.play()    
         elif bottle_frame.bottle_number != None and pygame.Rect.colliderect(bottle[0], bottle_frame.box) and old_bottle_num != None:
             print("swap bottles")
             old_frame = bottle_frames[old_bottle_num]
@@ -305,6 +310,7 @@ def drop_bottle(bottle, prev_center):
             old_frame.bottle_number = current_bottle[1]
             bottle[0].center = bottle_frame.box.center
             bottle_frame.bottle_number = bottle[1]
+            bottle_switch_sound.play()
         elif bottle_frame.bottle_number != None and pygame.Rect.colliderect(bottle[0], bottle_frame.box) and old_bottle_num == None:
             print("swap and put back")
             current_bottle = selected_bottle(bottle_frame.bottle_number)
@@ -312,6 +318,7 @@ def drop_bottle(bottle, prev_center):
             bottle[0].center = bottle_frame.box.center
             bottle_frame.bottle_number = bottle[1]
             bottle_frame.occupied = True
+            bottle_switch_sound.play()
                                   
         pygame.display.update()
         
@@ -461,6 +468,8 @@ def play_game():
                         selected = None
                         update_match_count()
                         center = ''
+                        if matching == str(number_of_bottles):
+                            winning_sound.play()
             
                 
     
