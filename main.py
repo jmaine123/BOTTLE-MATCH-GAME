@@ -12,8 +12,9 @@ SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 900
 PURPLE = (51, 0, 204)
 LAVENDER = (105, 0, 196)
-TRANSPARENT_PURPLE = (86, 76, 125, 90)
+TRANSPARENT_PURPLE = (86, 76, 125, 120)
 DARK_PURPLE = (86, 76, 125)
+LIGHT_BLUE = (67, 217, 204)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -63,7 +64,10 @@ difficulty =''
 pause = False
 main_screen = True
 frames_full = False
+hints_shown = 0
 
+
+#Load number sounds
 for i in range(0,7):
     sound = pygame.mixer.Sound(f'./assets/number-{i}.wav')
     count_sound_arr.append(sound)
@@ -386,7 +390,7 @@ def update_match_count():
             if num == top_nums[i]:
                 count+= 1
         matching = str(count)
-        matching_msg = f' Matching: {matching}'
+        matching_msg = f' BOTTLES MATCHED: {matching}'
         return count
     
 
@@ -396,7 +400,8 @@ def draw_pause():
     center_x = SCREEN_WIDTH//2 - pause_width//2
     center_y = SCREEN_HEIGHT//2 - pause_height//2
     pygame.draw.rect(surface,TRANSPARENT_PURPLE, [0,0, SCREEN_WIDTH, SCREEN_HEIGHT])
-    pygame.draw.rect(surface, DARK_PURPLE, [center_x, center_y, pause_width, pause_height], 0, 10)
+    pygame.draw.rect(surface, PURPLE, [center_x - 10, center_y - 10, pause_width + 20, pause_height + 20], 0, 10)
+    pygame.draw.rect(surface, LAVENDER, [center_x, center_y, pause_width, pause_height], 0, 10)
     
     main_btn = Button(surface, menu_font, "MAIN MENU", WHITE, (center_x + 65, center_y + 80), BUTTON_WIDTH, BUTTON_HEIGHT)
     resume = Button(surface, menu_font, "RESUME", WHITE, (center_x + 65, center_y + 160), BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -412,8 +417,13 @@ def draw_pause():
     return main_btn, restart, resume, leave
 
 
-def update_game_clock():
-    pass
+# def draw_hints():
+#     hint_msg = 'SHOW HINT'
+#     pause_text = font.render(hint_msg, True, WHITE)
+#     pause_rect = pause_text.get_rect()
+#     pause_rect.bottomleft = (10,SCREEN_HEIGHT - 10)
+#     screen.blit(pause_text, pause_rect)
+    
         
 
 
@@ -427,6 +437,7 @@ def play_game():
     global selected
     global matching
     global frames_full
+    global hints_shown
     
     minutes = 0
     seconds = 0
@@ -436,6 +447,7 @@ def play_game():
     main_screen = False
     pause = False
     frames_full = False
+    hints_shown = 0
     clock = pygame.time.Clock()
     # game_clock = pygame.time.Clock()
     running = True
@@ -446,26 +458,6 @@ def play_game():
         screen.fill(LAVENDER)
         
         #Update Game Clock
-        if matching != str(number_of_bottles) and not pause:
-            if milliseconds > 1000:
-                seconds += 1
-                milliseconds -= 1000
-                # pygame.display.update()
-            if seconds > 60:
-                minutes += 1
-                seconds -= 60
-            milliseconds += clock.tick_busy_loop(60)
-        
-        if minutes < 10 and seconds < 10:
-            timetxt = game_font.render(f"0{minutes}:0{seconds}", True, WHITE)
-        elif minutes < 10 and seconds > 10:
-            timetxt = game_font.render(f"0{minutes}:{seconds}", True, WHITE)
-        elif minutes > 10 and seconds < 10:
-            timetxt = game_font.render(f"{minutes}:0{seconds}", True, WHITE)
-        else:
-            timetxt = game_font.render(f"{minutes}:{seconds}", True, WHITE)
-        
-        screen.blit(timetxt, (SCREEN_WIDTH - 150, SCREEN_HEIGHT - 150))
         
         #Draw top bottle frames where bottles images will be placed
         for frame in bottle_frames:
@@ -532,6 +524,15 @@ def play_game():
         screen.blit(pause_text, pause_rect)
         
         
+        #Draw Hints Button
+        hint_btn = Button(screen, font, "SHOW HINT",  LIGHT_BLUE, (SCREEN_WIDTH//2 - 100,700), 210, 50)
+        if hints_shown < 2 and matching != str(number_of_bottles):
+            hint_btn.draw()
+        
+        if hint_btn.checkClicked() and not pause and hints_shown < 2:
+            hints_shown+=1
+        
+        
         
         
 
@@ -547,7 +548,7 @@ def play_game():
         for i, inner in enumerate(shuffled_inner_bottles):
             
             if matching != str(number_of_bottles):
-                cover_border = pygame.rect.Rect(bottle_frames[i].pos[0] - 2.5, bottle_frames[i].pos[1] - 2.5 + BOTTLE_HEIGHT + SHELF_GAP, BOTTLE_WIDTH + 5, BOTTLE_HEIGHT + 5)
+                cover_border = pygame.rect.Rect(bottle_frames[i].pos[0] - 3.5, bottle_frames[i].pos[1] - 3.5 + BOTTLE_HEIGHT + SHELF_GAP, BOTTLE_WIDTH + 5, BOTTLE_HEIGHT + 5)
                 cover = pygame.rect.Rect(bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP, BOTTLE_WIDTH, BOTTLE_HEIGHT)
                 pygame.draw.rect(screen, DARK_PURPLE, cover_border, border_radius=10)
                 pygame.draw.rect(screen, BLACK, cover, border_radius=10)
@@ -562,7 +563,13 @@ def play_game():
                 if restart.checkClicked() and pause == False:
                     config_game()
                     play_game()
+            
+            #SHOW HINTS
+            for i in range(0, hints_shown):
+                screen.blit(shuffled_inner_bottles[i][0], (bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP))
+                
 
+            #Pause Menu  button click logic
             if pause:
                 main, res, resume, leave = draw_pause()
                 for event in pygame.event.get():
@@ -588,6 +595,30 @@ def play_game():
                                 pause = False
                             else:
                                 pause = True
+                                
+                                
+                                
+            #Update Game Clock
+            if matching != str(number_of_bottles) and not pause:
+                if milliseconds > 1000:
+                    seconds += 1
+                    milliseconds -= 1000
+                    # pygame.display.update()
+                if seconds > 60:
+                    minutes += 1
+                    seconds -= 60
+                milliseconds += clock.tick_busy_loop(60)
+            
+            if minutes < 10 and seconds < 10:
+                timetxt = game_font.render(f"0{minutes}:0{seconds}", True, WHITE)
+            elif minutes < 10 and seconds >= 10:
+                timetxt = game_font.render(f"0{minutes}:{seconds}", True, WHITE)
+            elif minutes >= 10 and seconds < 10:
+                timetxt = game_font.render(f"{minutes}:0{seconds}", True, WHITE)
+            else:
+                timetxt = game_font.render(f"{minutes}:{seconds}", True, WHITE)
+            
+            screen.blit(timetxt, (SCREEN_WIDTH - 150, SCREEN_HEIGHT - 150))
                             
 
                             
