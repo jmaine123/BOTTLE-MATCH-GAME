@@ -1,5 +1,6 @@
 import pygame, sys, random
 import numpy as np
+from random import shuffle
 
 # import pickle
 
@@ -60,6 +61,7 @@ inner_bottles = []
 shuffled_inner_bottles = []
 bottle_paths = ['./assets/joan-tran-reEySFadyJQ-unsplash.jpg', './assets/Yellow Bottle.jpg', './assets/coffee.jpg', './assets/karl-kohler-dGIEMeN2MV8-unsplash.jpg', './assets/orange-juice.jpg', './assets/Coca-cola.jpg']
 count_sounds = []
+past_times = []
 difficulty =''
 pause = False
 main_screen = True
@@ -235,10 +237,12 @@ def main_menu():
 def shuffle_bottles():
     global shuffled_inner_bottles
     all_nums = [num for num in range(0, number_of_bottles)]
-    rand_nums = random.sample(all_nums, len(all_nums))
+    # rand_nums = random.sample(all_nums, len(all_nums))
+    shuffle(all_nums)
     # print(rand_nums)
     
-    for num in rand_nums:
+    # for num in rand_nums: --> old way of shuffling
+    for num in all_nums:
         shuffled_inner_bottles.append(inner_bottles[num])
     
     print(shuffled_inner_bottles)
@@ -365,10 +369,7 @@ def frames_all_full(top_nums):
         return True
     else:
         return False
-    # for frame in bottle_frames:
-    #     if frame.bottle_number == None:
-    #         return False
-    # return True
+
 
 
 def update_match_count():
@@ -445,7 +446,6 @@ def play_game():
     
     pause = False
     main_screen = False
-    pause = False
     frames_full = False
     hints_shown = 0
     clock = pygame.time.Clock()
@@ -529,6 +529,7 @@ def play_game():
         if hints_shown < 2 and matching != str(number_of_bottles):
             hint_btn.draw()
         
+        
         if hint_btn.checkClicked() and not pause and hints_shown < 2:
             hints_shown+=1
         
@@ -554,7 +555,6 @@ def play_game():
                 pygame.draw.rect(screen, BLACK, cover, border_radius=10)
                 question_image = pygame.image.load('./assets/neon-blue-question-mark-ikon-ikon-images.jpg').convert_alpha()
                 question_scaled = pygame.transform.scale(question_image, IMAGE_SIZE)
-                # question_box = question_scaled.get_rect()
                 screen.blit(question_scaled, (bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP))
             else:
                 screen.blit(inner[0], (bottle_frames[i].pos[0], bottle_frames[i].pos[1] + BOTTLE_HEIGHT + SHELF_GAP))
@@ -594,7 +594,11 @@ def play_game():
                             if pause:
                                 pause = False
                             else:
-                                pause = True
+                                pause = True                              
+                    if event.type == pygame.QUIT:
+                        running = False
+                        pygame.quit()
+                        sys.exit()
                                 
                                 
                                 
@@ -603,7 +607,6 @@ def play_game():
                 if milliseconds > 1000:
                     seconds += 1
                     milliseconds -= 1000
-                    # pygame.display.update()
                 if seconds > 60:
                     minutes += 1
                     seconds -= 60
@@ -619,6 +622,11 @@ def play_game():
                 timetxt = game_font.render(f"{minutes}:{seconds}", True, WHITE)
             
             screen.blit(timetxt, (SCREEN_WIDTH - 150, SCREEN_HEIGHT - 150))
+            
+            if matching != str(number_of_bottles):
+                past_times.append(timetxt)
+            
+                # print(past_times)
                             
 
                             
