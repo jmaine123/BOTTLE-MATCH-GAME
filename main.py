@@ -30,7 +30,7 @@ BOTTLE_WIDTH = 120
 BOTTLE_HEIGHT = 160
 IMAGE_SIZE = (BOTTLE_WIDTH, BOTTLE_HEIGHT)
 SHELF_GAP = 10
-BOTTLE_GAP = 15
+BOTTLE_GAP = 55
 BUTTON_WIDTH = 180
 BUTTON_HEIGHT = 50
 
@@ -237,27 +237,23 @@ def main_menu():
 def shuffle_bottles():
     global shuffled_inner_bottles
     all_nums = [num for num in range(0, number_of_bottles)]
-    # rand_nums = random.sample(all_nums, len(all_nums))
-    shuffle(all_nums)
-    # print(rand_nums)
-    
-    # for num in rand_nums: --> old way of shuffling
-    for num in all_nums:
-        shuffled_inner_bottles.append(inner_bottles[num])
-    
+    shuffle(all_nums) 
+    shuffled_inner_bottles = [inner_bottles[num] for num in all_nums]   
     print(shuffled_inner_bottles)
-    # print(all_nums)
 
         
         
-  
-
+# Load bottle images and append to list of bottles with coordinates and bottle numbers used to place bottles on screen
+#Also append the frames in which the bottles can be placed
 def append_bottles():
-    frame_x = 200
-    frame_y = 300
+    if number_of_bottles > 4:
+        frame_x = SCREEN_WIDTH//number_of_bottles - BOTTLE_GAP
+    else:
+        frame_x = SCREEN_WIDTH//number_of_bottles
+    frame_y = SCREEN_HEIGHT//3
     
-    bottle_x = 50
-    bottle_y = 100
+    top_bottles_x = 50
+    top_bottles_y = 100
     
     for i in range(0, number_of_bottles):
         gap = BOTTLE_GAP
@@ -266,8 +262,8 @@ def append_bottles():
         cup_scaled = pygame.transform.scale(cup_image, IMAGE_SIZE)
         img_box = cup_scaled.get_rect()
         
-        img_box.x += bottle_x
-        img_box.y = bottle_y
+        img_box.x += top_bottles_x
+        img_box.y = top_bottles_y
         bottles_rects.append([img_box, i, False])
         bottle_images.append(cup_scaled)
         
@@ -280,7 +276,7 @@ def append_bottles():
         inner_bottles.append([dupe_scaled, i])
 
         frame_x+=bottle_frame.width + gap
-        bottle_x+= img_box.width + gap
+        top_bottles_x+= img_box.width + gap
         
         
 def selected_bottle(frame_bottle_number):
